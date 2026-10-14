@@ -1,231 +1,161 @@
-import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
 
-void main() => runApp(const FightingGameApp());
+void main() => runApp(const GalleryApp());
 
-const kBg = Color(0xFF0A0E27);
-const kCard = Color(0xFF1A1F3A);
-const kRed = Color(0xFFFF4757);
-const kBlue = Color(0xFF1E90FF);
-const kGold = Color(0xFFFFD700);
-const kGreen = Color(0xFF2ED573);
+const kBg = Color(0xFF0F0F1E);
+const kCard = Color(0xFF1A1A2E);
+const kPurple = Color(0xFF9D4EDD);
+const kPink = Color(0xFFFF006E);
+const kCyan = Color(0xFF00D9FF);
+const kGreen = Color(0xFF3A0CA3);
 
-class FightingGameApp extends StatelessWidget {
-  const FightingGameApp({super.key});
+class Photo {
+  final String id;
+  final String title;
+  final String imageUrl;
+  final String category;
+  bool isFavorite;
+
+  Photo({
+    required this.id,
+    required this.title,
+    required this.imageUrl,
+    required this.category,
+    this.isFavorite = false,
+  });
+}
+
+class GalleryApp extends StatelessWidget {
+  const GalleryApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'معركة الأبطال',
+      title: 'معرض الصور',
       theme: ThemeData(
         brightness: Brightness.dark,
         useMaterial3: true,
         scaffoldBackgroundColor: kBg,
-        colorScheme: const ColorScheme.dark(primary: kRed, secondary: kBlue),
+        colorScheme: const ColorScheme.dark(primary: kPurple, secondary: kPink),
       ),
       builder: (context, child) =>
           Directionality(textDirection: TextDirection.rtl, child: child!),
-      home: const GameScreen(),
+      home: const HomePage(),
     );
   }
 }
 
-class Character {
-  final String name;
-  final String emoji;
-  int maxHp;
-  int currentHp;
-  int attackPower;
-  int defensePower;
-
-  Character({
-    required this.name,
-    required this.emoji,
-    required this.maxHp,
-    required this.attackPower,
-    required this.defensePower,
-  }) : currentHp = maxHp;
-
-  int getAttackDamage() {
-    return attackPower + Random().nextInt(10);
-  }
-
-  int takeDamage(int damage) {
-    int actualDamage = max(1, damage - defensePower);
-    currentHp = max(0, currentHp - actualDamage);
-    return actualDamage;
-  }
-
-  bool isAlive() => currentHp > 0;
-
-  void heal(int amount) {
-    currentHp = min(maxHp, currentHp + amount);
-  }
-
-  void reset() {
-    currentHp = maxHp;
-  }
-}
-
-class GameScreen extends StatefulWidget {
-  const GameScreen({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  State<GameScreen> createState() => _GameScreenState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
-  late Character player;
-  late Character enemy;
-  String battleLog = 'بدء المعركة!';
-  bool gameOver = false;
-  bool playerWon = false;
-  bool isPlayerTurn = true;
-  late AnimationController _playerAttackController;
-  late AnimationController _enemyAttackController;
+class _HomePageState extends State<HomePage> {
+  final List<Photo> allPhotos = [
+    Photo(
+      id: '1',
+      title: 'منظر طبيعي',
+      imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+      category: 'طبيعة',
+    ),
+    Photo(
+      id: '2',
+      title: 'مدينة ليلاً',
+      imageUrl: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&h=400&fit=crop',
+      category: 'مدن',
+    ),
+    Photo(
+      id: '3',
+      title: 'الشاطئ الذهبي',
+      imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=400&fit=crop',
+      category: 'طبيعة',
+    ),
+    Photo(
+      id: '4',
+      title: 'غروب الشمس',
+      imageUrl: 'https://images.unsplash.com/photo-1495567720989-cebdbdd97913?w=400&h=400&fit=crop',
+      category: 'طبيعة',
+    ),
+    Photo(
+      id: '5',
+      title: 'فن عصري',
+      imageUrl: 'https://images.unsplash.com/photo-1579783902614-e3fb5141b0cb?w=400&h=400&fit=crop',
+      category: 'فن',
+    ),
+    Photo(
+      id: '6',
+      title: 'الجبال العالية',
+      imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+      category: 'طبيعة',
+    ),
+    Photo(
+      id: '7',
+      title: 'التصوير المعماري',
+      imageUrl: 'https://images.unsplash.com/photo-1479839672679-a46482f0e7c8?w=400&h=400&fit=crop',
+      category: 'معمار',
+    ),
+    Photo(
+      id: '8',
+      title: 'الزهور الملونة',
+      imageUrl: 'https://images.unsplash.com/photo-1490727570938-ec5a6ff31d8e?w=400&h=400&fit=crop',
+      category: 'طبيعة',
+    ),
+  ];
+
+  List<Photo> filteredPhotos = [];
+  String selectedCategory = 'الكل';
+  String searchQuery = '';
+  final TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _initGame();
-    _playerAttackController = AnimationController(
-      duration: const Duration(milliseconds: 400),
-      vsync: this,
-    );
-    _enemyAttackController = AnimationController(
-      duration: const Duration(milliseconds: 400),
-      vsync: this,
-    );
+    filteredPhotos = allPhotos;
+    searchController.addListener(_filterPhotos);
   }
 
-  void _initGame() {
-    player = Character(
-      name: 'أنت',
-      emoji: '⚔️',
-      maxHp: 100,
-      attackPower: 15,
-      defensePower: 5,
-    );
-
-    enemy = Character(
-      name: 'العدو',
-      emoji: '👹',
-      maxHp: 80,
-      attackPower: 12,
-      defensePower: 3,
-    );
-
-    battleLog = 'بدء المعركة! اختر هجومك';
-    gameOver = false;
-    playerWon = false;
-    isPlayerTurn = true;
-  }
-
-  void _playerAttack(String type) {
-    if (!isPlayerTurn || gameOver) return;
-
-    int damage = 0;
-    String message = '';
-
-    if (type == 'normal') {
-      damage = player.getAttackDamage();
-      message = 'هجوم عادي!';
-    } else if (type == 'power') {
-      damage = (player.getAttackDamage() * 1.5).toInt();
-      message = 'هجوم قوي! 💥';
-    } else if (type == 'heal') {
-      player.heal(25);
-      message = 'تم الشفاء بـ 25 نقطة! 🩹';
-      damage = 0;
-    }
-
-    int actualDamage = enemy.takeDamage(damage);
-
+  void _filterPhotos() {
     setState(() {
-      if (damage > 0) {
-        battleLog = '$message\nالضرر: $actualDamage';
-      } else {
-        battleLog = message;
-      }
-      isPlayerTurn = false;
-    });
-
-    _playerAttackController.forward().then((_) {
-      _playerAttackController.reset();
-      Future.delayed(const Duration(milliseconds: 800), _enemyTurn);
+      searchQuery = searchController.text;
+      _updateFiltered();
     });
   }
 
-  void _enemyTurn() {
-    if (gameOver) return;
-
-    int actionType = Random().nextInt(100);
-    String attackType = 'normal';
-    String actionName = 'هجوم عادي';
-
-    if (actionType < 30 && enemy.currentHp < enemy.maxHp * 0.5) {
-      enemy.heal(20);
-      battleLog = 'العدو: تم الشفاء بـ 20 نقطة! 🩹';
-      actionName = 'شفاء';
-    } else if (actionType < 60) {
-      attackType = 'power';
-      actionName = 'هجوم قوي';
-    }
-
-    if (actionName != 'شفاء') {
-      int damage = enemy.getAttackDamage();
-      if (attackType == 'power') {
-        damage = (damage * 1.5).toInt();
-      }
-
-      int actualDamage = player.takeDamage(damage);
-      battleLog = 'العدو: $actionName\nالضرر: $actualDamage';
-    }
-
-    setState(() {});
-
-    _enemyAttackController.forward().then((_) {
-      _enemyAttackController.reset();
-      _checkGameStatus();
-      if (!gameOver) {
-        setState(() => isPlayerTurn = true);
-      }
-    });
+  void _updateFiltered() {
+    filteredPhotos = allPhotos.where((photo) {
+      final matchCategory = selectedCategory == 'الكل' || photo.category == selectedCategory;
+      final matchSearch = photo.title.contains(searchQuery) ||
+          photo.category.contains(searchQuery);
+      return matchCategory && matchSearch;
+    }).toList();
   }
 
-  void _checkGameStatus() {
+  void _toggleFavorite(Photo photo) {
     setState(() {
-      if (!enemy.isAlive()) {
-        gameOver = true;
-        playerWon = true;
-        battleLog = '🎉 انتصرت! انت بطل! 🎉';
-      } else if (!player.isAlive()) {
-        gameOver = true;
-        playerWon = false;
-        battleLog = '😢 تم هزيمتك! حاول مرة أخرى';
-      }
+      final index = allPhotos.indexOf(photo);
+      allPhotos[index].isFavorite = !allPhotos[index].isFavorite;
     });
   }
 
-  void _resetGame() {
+  void _deletePhoto(Photo photo) {
     setState(() {
-      _initGame();
+      allPhotos.removeWhere((p) => p.id == photo.id);
+      _updateFiltered();
     });
   }
 
   @override
   void dispose() {
-    _playerAttackController.dispose();
-    _enemyAttackController.dispose();
+    searchController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    double playerHpPercent = player.currentHp / player.maxHp;
-    double enemyHpPercent = enemy.currentHp / enemy.maxHp;
+    final categories = ['الكل', 'طبيعة', 'مدن', 'فن', 'معمار'];
 
     return Scaffold(
       appBar: AppBar(
@@ -233,7 +163,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         backgroundColor: Colors.transparent,
         centerTitle: true,
         title: const Text(
-          '⚔️ معركة الأبطال ⚔️',
+          '🖼️ معرض الصور',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
       ),
@@ -241,291 +171,581 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ScaleTransition(
-                scale: Tween<double>(begin: 1, end: 1.05).animate(
-                  CurvedAnimation(parent: _enemyAttackController, curve: Curves.easeInOut),
+              // شريط البحث
+              TextField(
+                controller: searchController,
+                decoration: InputDecoration(
+                  hintText: 'ابحث عن الصور...',
+                  hintStyle: const TextStyle(color: Colors.white38),
+                  prefixIcon: const Icon(Icons.search, color: Colors.white54),
+                  filled: true,
+                  fillColor: kCard,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
-                child: Column(
-                  children: [
-                    Text(
-                      enemy.emoji,
-                      style: const TextStyle(fontSize: 80),
+                style: const TextStyle(color: Colors.white),
+              ),
+              const SizedBox(height: 20),
+
+              // التصنيفات
+              const Text(
+                'التصنيفات',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white54),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 40,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final category = categories[index];
+                    final isSelected = selectedCategory == category;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text(category),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          setState(() {
+                            selectedCategory = category;
+                            _updateFiltered();
+                          });
+                        },
+                        backgroundColor: Colors.transparent,
+                        selectedColor: kPurple,
+                        side: BorderSide(
+                          color: isSelected ? Colors.transparent : Colors.white24,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // عداد الصور
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'الصور (${filteredPhotos.length})',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white54,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      enemy.name,
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: kPurple.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'المفضلة: ${allPhotos.where((p) => p.isFavorite).length}',
                       style: const TextStyle(
-                        fontSize: 20,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
+                        color: kPink,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: kCard,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: kRed, width: 2),
-                      ),
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('الصحة:'),
-                              Text(
-                                '${enemy.currentHp}/${enemy.maxHp}',
-                                style: const TextStyle(
-                                  color: kRed,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: LinearProgressIndicator(
-                              value: enemyHpPercent,
-                              minHeight: 20,
-                              backgroundColor: Colors.grey.shade700,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                enemyHpPercent > 0.3 ? kRed : kRed.withOpacity(0.5),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 40),
-              Container(
-                decoration: BoxDecoration(
-                  color: kCard,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: kGold, width: 1),
-                ),
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    const Text(
-                      '📜 سجل المعركة',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: kGold,
+              const SizedBox(height: 16),
+
+              // شبكة الصور
+              if (filteredPhotos.isEmpty)
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 40),
+                      Icon(Icons.image_not_supported_outlined,
+                          size: 64, color: kPurple.withOpacity(0.5)),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'لا توجد صور',
+                        style: TextStyle(fontSize: 16, color: Colors.white54),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.all(12),
-                      constraints: const BoxConstraints(minHeight: 80),
-                      child: Text(
-                        battleLog,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.white70,
-                          height: 1.6,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 40),
-              ScaleTransition(
-                scale: Tween<double>(begin: 1, end: 1.05).animate(
-                  CurvedAnimation(parent: _playerAttackController, curve: Curves.easeInOut),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      player.emoji,
-                      style: const TextStyle(fontSize: 80),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      player.name,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: kCard,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: kBlue, width: 2),
-                      ),
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text('الصحة:'),
-                              Text(
-                                '${player.currentHp}/${player.maxHp}',
-                                style: const TextStyle(
-                                  color: kBlue,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: LinearProgressIndicator(
-                              value: playerHpPercent,
-                              minHeight: 20,
-                              backgroundColor: Colors.grey.shade700,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                playerHpPercent > 0.3 ? kBlue : kRed,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 40),
-              if (!gameOver)
-                Column(
-                  children: [
-                    Text(
-                      isPlayerTurn ? '🎮 دورك الآن!' : '⏳ انتظر دور العدو...',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: isPlayerTurn ? kGreen : Colors.white54,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: isPlayerTurn ? () => _playerAttack('normal') : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: kBlue,
-                              disabledBackgroundColor: Colors.grey.shade700,
-                              padding: const EdgeInsets.all(16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              'هجوم عادي\n⚔️',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: isPlayerTurn ? () => _playerAttack('power') : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: kRed,
-                              disabledBackgroundColor: Colors.grey.shade700,
-                              padding: const EdgeInsets.all(16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              'هجوم قوي\n💥',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: isPlayerTurn ? () => _playerAttack('heal') : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: kGreen,
-                              disabledBackgroundColor: Colors.grey.shade700,
-                              padding: const EdgeInsets.all(16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              'شفاء\n🩹',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                      const SizedBox(height: 40),
+                    ],
+                  ),
                 )
               else
-                Column(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: playerWon ? kGreen.withOpacity(0.2) : kRed.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: playerWon ? kGreen : kRed,
-                          width: 2,
-                        ),
-                      ),
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        battleLog,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: playerWon ? kGreen : kRed,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: _resetGame,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: kGold,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemCount: filteredPhotos.length,
+                  itemBuilder: (context, index) {
+                    final photo = filteredPhotos[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => FullScreenViewer(
+                              photos: filteredPhotos,
+                              initialIndex: index,
+                              onFavoriteToggle: _toggleFavorite,
+                              onDelete: _deletePhoto,
+                            ),
                           ),
-                        ),
-                        child: const Text(
-                          'لعبة جديدة',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
+                        );
+                      },
+                      child: PhotoCard(
+                        photo: photo,
+                        onFavoriteToggle: () => _toggleFavorite(photo),
+                        onDelete: () => _deletePhoto(photo),
                       ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
               const SizedBox(height: 20),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class PhotoCard extends StatefulWidget {
+  final Photo photo;
+  final VoidCallback onFavoriteToggle;
+  final VoidCallback onDelete;
+
+  const PhotoCard({
+    required this.photo,
+    required this.onFavoriteToggle,
+    required this.onDelete,
+  });
+
+  @override
+  State<PhotoCard> createState() => _PhotoCardState();
+}
+
+class _PhotoCardState extends State<PhotoCard> {
+  bool _showMenu = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [kPurple.withOpacity(0.3), kPink.withOpacity(0.3)],
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Stack(
+              children: [
+                Image.network(
+                  widget.photo.imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: kCard,
+                    child: const Center(
+                      child: Icon(Icons.image_not_supported, size: 32),
+                    ),
+                  ),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Colors.transparent, kBg.withOpacity(0.7)],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // العنوان والفئة
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.photo.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: kPurple.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    widget.photo.category,
+                    style: const TextStyle(fontSize: 10, color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // زر المفضلة
+        Positioned(
+          top: 8,
+          right: 8,
+          child: GestureDetector(
+            onTap: widget.onFavoriteToggle,
+            child: Container(
+              decoration: BoxDecoration(
+                color: kBg.withOpacity(0.8),
+                shape: BoxShape.circle,
+              ),
+              padding: const EdgeInsets.all(8),
+              child: Icon(
+                widget.photo.isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: widget.photo.isFavorite ? kPink : Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+        ),
+        // زر القائمة
+        Positioned(
+          top: 8,
+          left: 8,
+          child: GestureDetector(
+            onTap: () => setState(() => _showMenu = !_showMenu),
+            child: Container(
+              decoration: BoxDecoration(
+                color: kBg.withOpacity(0.8),
+                shape: BoxShape.circle,
+              ),
+              padding: const EdgeInsets.all(8),
+              child: const Icon(Icons.more_vert, size: 20),
+            ),
+          ),
+        ),
+        // القائمة المنسدلة
+        if (_showMenu)
+          Positioned(
+            top: 40,
+            left: 8,
+            child: Container(
+              decoration: BoxDecoration(
+                color: kCard,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      widget.onDelete();
+                      setState(() => _showMenu = false);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.delete, size: 16, color: kPink),
+                          const SizedBox(width: 8),
+                          const Text('حذف', style: TextStyle(fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class FullScreenViewer extends StatefulWidget {
+  final List<Photo> photos;
+  final int initialIndex;
+  final Function(Photo) onFavoriteToggle;
+  final Function(Photo) onDelete;
+
+  const FullScreenViewer({
+    required this.photos,
+    required this.initialIndex,
+    required this.onFavoriteToggle,
+    required this.onDelete,
+  });
+
+  @override
+  State<FullScreenViewer> createState() => _FullScreenViewerState();
+}
+
+class _FullScreenViewerState extends State<FullScreenViewer> {
+  late PageController _pageController;
+  late int currentIndex;
+  double _scale = 1.0;
+
+  @override
+  void initState() {
+    super.initState();
+    currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: currentIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentPhoto = widget.photos[currentIndex];
+
+    return Scaffold(
+      backgroundColor: kBg,
+      body: Stack(
+        children: [
+          PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() => currentIndex = index);
+            },
+            itemCount: widget.photos.length,
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onDoubleTap: () {
+                  setState(() => _scale = _scale == 1.0 ? 2.0 : 1.0);
+                },
+                child: Transform.scale(
+                  scale: _scale,
+                  child: InteractiveViewer(
+                    boundaryMargin: const EdgeInsets.all(20),
+                    minScale: 1.0,
+                    maxScale: 3.0,
+                    child: Image.network(
+                      widget.photos[index].imageUrl,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Center(child: Icon(Icons.error)),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+          // الشريط العلوي
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [kBg.withOpacity(0.8), Colors.transparent],
+                ),
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: kCard,
+                        shape: BoxShape.circle,
+                      ),
+                      padding: const EdgeInsets.all(8),
+                      child: const Icon(Icons.arrow_back, size: 24),
+                    ),
+                  ),
+                  Text(
+                    '${currentIndex + 1}/${widget.photos.length}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      widget.onFavoriteToggle(currentPhoto);
+                      setState(() {});
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: kCard,
+                        shape: BoxShape.circle,
+                      ),
+                      padding: const EdgeInsets.all(8),
+                      child: Icon(
+                        currentPhoto.isFavorite
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        size: 24,
+                        color: currentPhoto.isFavorite ? kPink : Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // الشريط السفلي
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [kBg.withOpacity(0.8), Colors.transparent],
+                ),
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    currentPhoto.title,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: kPurple.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      currentPhoto.category,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          widget.onDelete(currentPhoto);
+                          if (currentIndex < widget.photos.length - 1) {
+                            _pageController.nextPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          } else if (currentIndex > 0) {
+                            _pageController.previousPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          } else {
+                            Navigator.pop(context);
+                          }
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: kPink.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: kPink),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          child: const Text('حذف', style: TextStyle(color: kPink)),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: currentIndex > 0
+                                ? () => _pageController.previousPage(
+                                      duration: const Duration(milliseconds: 300),
+                                      curve: Curves.easeInOut,
+                                    )
+                                : null,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: kPurple.withOpacity(0.3),
+                                shape: BoxShape.circle,
+                              ),
+                              padding: const EdgeInsets.all(8),
+                              child: Icon(
+                                Icons.arrow_back_ios,
+                                size: 20,
+                                color: currentIndex > 0 ? kCyan : Colors.white30,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          GestureDetector(
+                            onTap: currentIndex < widget.photos.length - 1
+                                ? () => _pageController.nextPage(
+                                      duration: const Duration(milliseconds: 300),
+                                      curve: Curves.easeInOut,
+                                    )
+                                : null,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: kPurple.withOpacity(0.3),
+                                shape: BoxShape.circle,
+                              ),
+                              padding: const EdgeInsets.all(8),
+                              child: Icon(
+                                Icons.arrow_forward_ios,
+                                size: 20,
+                                color: currentIndex < widget.photos.length - 1
+                                    ? kCyan
+                                    : Colors.white30,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
