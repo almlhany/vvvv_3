@@ -1,524 +1,171 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(const GalleryApp());
+void main() => runApp(const TikTokApp());
 
-const kBg = Color(0xFF0F0F1E);
-const kCard = Color(0xFF1A1A2E);
-const kPurple = Color(0xFF9D4EDD);
-const kPink = Color(0xFFFF006E);
-const kCyan = Color(0xFF00D9FF);
-const kGreen = Color(0xFF3A0CA3);
+const kBg = Color(0xFF000000);
+const kCard = Color(0xFF1a1a1a);
+const kAccent = Color(0xFFFF0050);
+const kGrey = Color(0xFF686868);
 
-class Photo {
+class Video {
   final String id;
-  final String title;
-  final String imageUrl;
-  final String category;
-  bool isFavorite;
+  final String username;
+  final String avatar;
+  final String description;
+  final String videoThumbnail;
+  final int likes;
+  final int comments;
+  final int shares;
+  int currentLikes;
+  bool isLiked;
+  bool isFollowed;
 
-  Photo({
+  Video({
     required this.id,
-    required this.title,
-    required this.imageUrl,
-    required this.category,
-    this.isFavorite = false,
-  });
+    required this.username,
+    required this.avatar,
+    required this.description,
+    required this.videoThumbnail,
+    required this.likes,
+    required this.comments,
+    required this.shares,
+    this.isLiked = false,
+    this.isFollowed = false,
+  }) : currentLikes = likes;
 }
 
-class GalleryApp extends StatelessWidget {
-  const GalleryApp({super.key});
+class TikTokApp extends StatelessWidget {
+  const TikTokApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'معرض الصور',
+      title: 'TikTok',
       theme: ThemeData(
         brightness: Brightness.dark,
         useMaterial3: true,
         scaffoldBackgroundColor: kBg,
-        colorScheme: const ColorScheme.dark(primary: kPurple, secondary: kPink),
+        colorScheme: const ColorScheme.dark(primary: kAccent, secondary: kAccent),
       ),
       builder: (context, child) =>
           Directionality(textDirection: TextDirection.rtl, child: child!),
-      home: const HomePage(),
+      home: const MainApp(),
     );
   }
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class MainApp extends StatefulWidget {
+  const MainApp({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<MainApp> createState() => _MainAppState();
 }
 
-class _HomePageState extends State<HomePage> {
-  final List<Photo> allPhotos = [
-    Photo(
+class _MainAppState extends State<MainApp> {
+  int currentTab = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: IndexedStack(
+        index: currentTab,
+        children: [
+          const HomeScreen(),
+          const ExploreScreen(),
+          const CreateScreen(),
+          const MessagesScreen(),
+          const ProfileScreen(),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: currentTab,
+        onTap: (index) {
+          setState(() => currentTab = index);
+        },
+        backgroundColor: kCard,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: kGrey,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.explore), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.add_circle_outline), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.mail_outline), label: ''),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: ''),
+        ],
+      ),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final List<Video> videos = [
+    Video(
       id: '1',
-      title: 'منظر طبيعي',
-      imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
-      category: 'طبيعة',
+      username: 'أحمد محمد',
+      avatar: 'https://i.pravatar.cc/150?img=1',
+      description: 'اليوم تعلمت شيء جديد في البرمجة 🚀',
+      videoThumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=600&fit=crop',
+      likes: 1200,
+      comments: 150,
+      shares: 89,
     ),
-    Photo(
+    Video(
       id: '2',
-      title: 'مدينة ليلاً',
-      imageUrl: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=400&h=400&fit=crop',
-      category: 'مدن',
+      username: 'فاطمة سارة',
+      avatar: 'https://i.pravatar.cc/150?img=2',
+      description: 'أجمل غروب شمس شفته في حياتي 🌅',
+      videoThumbnail: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=600&fit=crop',
+      likes: 5600,
+      comments: 420,
+      shares: 320,
     ),
-    Photo(
+    Video(
       id: '3',
-      title: 'الشاطئ الذهبي',
-      imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400&h=400&fit=crop',
-      category: 'طبيعة',
+      username: 'علي الدعيع',
+      avatar: 'https://i.pravatar.cc/150?img=3',
+      description: 'رقصة جديدة تحبونها؟ 💃',
+      videoThumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=600&fit=crop',
+      likes: 8900,
+      comments: 650,
+      shares: 550,
     ),
-    Photo(
+    Video(
       id: '4',
-      title: 'غروب الشمس',
-      imageUrl: 'https://images.unsplash.com/photo-1495567720989-cebdbdd97913?w=400&h=400&fit=crop',
-      category: 'طبيعة',
+      username: 'ليلى محمود',
+      avatar: 'https://i.pravatar.cc/150?img=4',
+      description: 'تحدي الطعام الحار 🌶️',
+      videoThumbnail: 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=400&h=600&fit=crop',
+      likes: 3400,
+      comments: 280,
+      shares: 200,
     ),
-    Photo(
+    Video(
       id: '5',
-      title: 'فن عصري',
-      imageUrl: 'https://images.unsplash.com/photo-1579783902614-e3fb5141b0cb?w=400&h=400&fit=crop',
-      category: 'فن',
-    ),
-    Photo(
-      id: '6',
-      title: 'الجبال العالية',
-      imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
-      category: 'طبيعة',
-    ),
-    Photo(
-      id: '7',
-      title: 'التصوير المعماري',
-      imageUrl: 'https://images.unsplash.com/photo-1479839672679-a46482f0e7c8?w=400&h=400&fit=crop',
-      category: 'معمار',
-    ),
-    Photo(
-      id: '8',
-      title: 'الزهور الملونة',
-      imageUrl: 'https://images.unsplash.com/photo-1490727570938-ec5a6ff31d8e?w=400&h=400&fit=crop',
-      category: 'طبيعة',
+      username: 'محمود أحمد',
+      avatar: 'https://i.pravatar.cc/150?img=5',
+      description: 'الحيوانات الأليفة أفضل من الناس 🐕',
+      videoThumbnail: 'https://images.unsplash.com/photo-1552053831-71594a27c62d?w=400&h=600&fit=crop',
+      likes: 12000,
+      comments: 890,
+      shares: 650,
     ),
   ];
 
-  List<Photo> filteredPhotos = [];
-  String selectedCategory = 'الكل';
-  String searchQuery = '';
-  final TextEditingController searchController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    filteredPhotos = allPhotos;
-    searchController.addListener(_filterPhotos);
-  }
-
-  void _filterPhotos() {
-    setState(() {
-      searchQuery = searchController.text;
-      _updateFiltered();
-    });
-  }
-
-  void _updateFiltered() {
-    filteredPhotos = allPhotos.where((photo) {
-      final matchCategory = selectedCategory == 'الكل' || photo.category == selectedCategory;
-      final matchSearch = photo.title.contains(searchQuery) ||
-          photo.category.contains(searchQuery);
-      return matchCategory && matchSearch;
-    }).toList();
-  }
-
-  void _toggleFavorite(Photo photo) {
-    setState(() {
-      final index = allPhotos.indexOf(photo);
-      allPhotos[index].isFavorite = !allPhotos[index].isFavorite;
-    });
-  }
-
-  void _deletePhoto(Photo photo) {
-    setState(() {
-      allPhotos.removeWhere((p) => p.id == photo.id);
-      _updateFiltered();
-    });
-  }
-
-  @override
-  void dispose() {
-    searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final categories = ['الكل', 'طبيعة', 'مدن', 'فن', 'معمار'];
-
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        centerTitle: true,
-        title: const Text(
-          '🖼️ معرض الصور',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // شريط البحث
-              TextField(
-                controller: searchController,
-                decoration: InputDecoration(
-                  hintText: 'ابحث عن الصور...',
-                  hintStyle: const TextStyle(color: Colors.white38),
-                  prefixIcon: const Icon(Icons.search, color: Colors.white54),
-                  filled: true,
-                  fillColor: kCard,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                ),
-                style: const TextStyle(color: Colors.white),
-              ),
-              const SizedBox(height: 20),
-
-              // التصنيفات
-              const Text(
-                'التصنيفات',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white54),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 40,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: categories.length,
-                  itemBuilder: (context, index) {
-                    final category = categories[index];
-                    final isSelected = selectedCategory == category;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: FilterChip(
-                        label: Text(category),
-                        selected: isSelected,
-                        onSelected: (selected) {
-                          setState(() {
-                            selectedCategory = category;
-                            _updateFiltered();
-                          });
-                        },
-                        backgroundColor: Colors.transparent,
-                        selectedColor: kPurple,
-                        side: BorderSide(
-                          color: isSelected ? Colors.transparent : Colors.white24,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // عداد الصور
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'الصور (${filteredPhotos.length})',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white54,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: kPurple.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      'المفضلة: ${allPhotos.where((p) => p.isFavorite).length}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: kPink,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // شبكة الصور
-              if (filteredPhotos.isEmpty)
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 40),
-                      Icon(Icons.image_not_supported_outlined,
-                          size: 64, color: kPurple.withOpacity(0.5)),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'لا توجد صور',
-                        style: TextStyle(fontSize: 16, color: Colors.white54),
-                      ),
-                      const SizedBox(height: 40),
-                    ],
-                  ),
-                )
-              else
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                  ),
-                  itemCount: filteredPhotos.length,
-                  itemBuilder: (context, index) {
-                    final photo = filteredPhotos[index];
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => FullScreenViewer(
-                              photos: filteredPhotos,
-                              initialIndex: index,
-                              onFavoriteToggle: _toggleFavorite,
-                              onDelete: _deletePhoto,
-                            ),
-                          ),
-                        );
-                      },
-                      child: PhotoCard(
-                        photo: photo,
-                        onFavoriteToggle: () => _toggleFavorite(photo),
-                        onDelete: () => _deletePhoto(photo),
-                      ),
-                    );
-                  },
-                ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class PhotoCard extends StatefulWidget {
-  final Photo photo;
-  final VoidCallback onFavoriteToggle;
-  final VoidCallback onDelete;
-
-  const PhotoCard({
-    required this.photo,
-    required this.onFavoriteToggle,
-    required this.onDelete,
-  });
-
-  @override
-  State<PhotoCard> createState() => _PhotoCardState();
-}
-
-class _PhotoCardState extends State<PhotoCard> {
-  bool _showMenu = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [kPurple.withOpacity(0.3), kPink.withOpacity(0.3)],
-            ),
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Stack(
-              children: [
-                Image.network(
-                  widget.photo.imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    color: kCard,
-                    child: const Center(
-                      child: Icon(Icons.image_not_supported, size: 32),
-                    ),
-                  ),
-                ),
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, kBg.withOpacity(0.7)],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        // العنوان والفئة
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.photo.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: kPurple.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    widget.photo.category,
-                    style: const TextStyle(fontSize: 10, color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        // زر المفضلة
-        Positioned(
-          top: 8,
-          right: 8,
-          child: GestureDetector(
-            onTap: widget.onFavoriteToggle,
-            child: Container(
-              decoration: BoxDecoration(
-                color: kBg.withOpacity(0.8),
-                shape: BoxShape.circle,
-              ),
-              padding: const EdgeInsets.all(8),
-              child: Icon(
-                widget.photo.isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: widget.photo.isFavorite ? kPink : Colors.white,
-                size: 20,
-              ),
-            ),
-          ),
-        ),
-        // زر القائمة
-        Positioned(
-          top: 8,
-          left: 8,
-          child: GestureDetector(
-            onTap: () => setState(() => _showMenu = !_showMenu),
-            child: Container(
-              decoration: BoxDecoration(
-                color: kBg.withOpacity(0.8),
-                shape: BoxShape.circle,
-              ),
-              padding: const EdgeInsets.all(8),
-              child: const Icon(Icons.more_vert, size: 20),
-            ),
-          ),
-        ),
-        // القائمة المنسدلة
-        if (_showMenu)
-          Positioned(
-            top: 40,
-            left: 8,
-            child: Container(
-              decoration: BoxDecoration(
-                color: kCard,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      widget.onDelete();
-                      setState(() => _showMenu = false);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.delete, size: 16, color: kPink),
-                          const SizedBox(width: 8),
-                          const Text('حذف', style: TextStyle(fontSize: 12)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class FullScreenViewer extends StatefulWidget {
-  final List<Photo> photos;
-  final int initialIndex;
-  final Function(Photo) onFavoriteToggle;
-  final Function(Photo) onDelete;
-
-  const FullScreenViewer({
-    required this.photos,
-    required this.initialIndex,
-    required this.onFavoriteToggle,
-    required this.onDelete,
-  });
-
-  @override
-  State<FullScreenViewer> createState() => _FullScreenViewerState();
-}
-
-class _FullScreenViewerState extends State<FullScreenViewer> {
   late PageController _pageController;
-  late int currentIndex;
-  double _scale = 1.0;
 
   @override
   void initState() {
     super.initState();
-    currentIndex = widget.initialIndex;
-    _pageController = PageController(initialPage: currentIndex);
+    _pageController = PageController();
   }
 
   @override
@@ -529,224 +176,455 @@ class _FullScreenViewerState extends State<FullScreenViewer> {
 
   @override
   Widget build(BuildContext context) {
-    final currentPhoto = widget.photos[currentIndex];
-
     return Scaffold(
-      backgroundColor: kBg,
-      body: Stack(
-        children: [
-          PageView.builder(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() => currentIndex = index);
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        title: const Text(
+          'للك',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+      ),
+      body: PageView.builder(
+        controller: _pageController,
+        scrollDirection: Axis.vertical,
+        itemCount: videos.length,
+        itemBuilder: (context, index) {
+          return VideoCard(
+            video: videos[index],
+            onLikeToggle: (liked) {
+              setState(() {
+                videos[index].isLiked = liked;
+                if (liked) {
+                  videos[index].currentLikes++;
+                } else {
+                  videos[index].currentLikes--;
+                }
+              });
             },
-            itemCount: widget.photos.length,
-            itemBuilder: (context, index) {
-              return GestureDetector(
-                onDoubleTap: () {
-                  setState(() => _scale = _scale == 1.0 ? 2.0 : 1.0);
-                },
-                child: Transform.scale(
-                  scale: _scale,
-                  child: InteractiveViewer(
-                    boundaryMargin: const EdgeInsets.all(20),
-                    minScale: 1.0,
-                    maxScale: 3.0,
-                    child: Image.network(
-                      widget.photos[index].imageUrl,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Center(child: Icon(Icons.error)),
-                    ),
-                  ),
-                ),
-              );
+            onFollowToggle: (followed) {
+              setState(() {
+                videos[index].isFollowed = followed;
+              });
             },
-          ),
-          // الشريط العلوي
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [kBg.withOpacity(0.8), Colors.transparent],
-                ),
-              ),
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: kCard,
-                        shape: BoxShape.circle,
-                      ),
-                      padding: const EdgeInsets.all(8),
-                      child: const Icon(Icons.arrow_back, size: 24),
-                    ),
-                  ),
-                  Text(
-                    '${currentIndex + 1}/${widget.photos.length}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      widget.onFavoriteToggle(currentPhoto);
-                      setState(() {});
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: kCard,
-                        shape: BoxShape.circle,
-                      ),
-                      padding: const EdgeInsets.all(8),
-                      child: Icon(
-                        currentPhoto.isFavorite
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        size: 24,
-                        color: currentPhoto.isFavorite ? kPink : Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // الشريط السفلي
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [kBg.withOpacity(0.8), Colors.transparent],
-                ),
-              ),
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    currentPhoto.title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: kPurple.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      currentPhoto.category,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          widget.onDelete(currentPhoto);
-                          if (currentIndex < widget.photos.length - 1) {
-                            _pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          } else if (currentIndex > 0) {
-                            _pageController.previousPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          } else {
-                            Navigator.pop(context);
-                          }
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: kPink.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: kPink),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          child: const Text('حذف', style: TextStyle(color: kPink)),
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          GestureDetector(
-                            onTap: currentIndex > 0
-                                ? () => _pageController.previousPage(
-                                      duration: const Duration(milliseconds: 300),
-                                      curve: Curves.easeInOut,
-                                    )
-                                : null,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: kPurple.withOpacity(0.3),
-                                shape: BoxShape.circle,
-                              ),
-                              padding: const EdgeInsets.all(8),
-                              child: Icon(
-                                Icons.arrow_back_ios,
-                                size: 20,
-                                color: currentIndex > 0 ? kCyan : Colors.white30,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          GestureDetector(
-                            onTap: currentIndex < widget.photos.length - 1
-                                ? () => _pageController.nextPage(
-                                      duration: const Duration(milliseconds: 300),
-                                      curve: Curves.easeInOut,
-                                    )
-                                : null,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: kPurple.withOpacity(0.3),
-                                shape: BoxShape.circle,
-                              ),
-                              padding: const EdgeInsets.all(8),
-                              child: Icon(
-                                Icons.arrow_forward_ios,
-                                size: 20,
-                                color: currentIndex < widget.photos.length - 1
-                                    ? kCyan
-                                    : Colors.white30,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+            onCommentTap: () => _showComments(context, videos[index]),
+            onShareTap: () => _showShare(context),
+          );
+        },
       ),
     );
   }
+
+  void _showComments(BuildContext context, Video video) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: kCard,
+      isScrollControlled: true,
+      builder: (context) => CommentSheet(video: video),
+    );
+  }
+
+  void _showShare(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: kCard,
+      builder: (context) => ShareSheet(),
+    );
+  }
 }
+
+class VideoCard extends StatefulWidget {
+  final Video video;
+  final Function(bool) onLikeToggle;
+  final Function(bool) onFollowToggle;
+  final VoidCallback onCommentTap;
+  final VoidCallback onShareTap;
+
+  const VideoCard({
+    required this.video,
+    required this.onLikeToggle,
+    required this.onFollowToggle,
+    required this.onCommentTap,
+    required this.onShareTap,
+  });
+
+  @override
+  State<VideoCard> createState() => _VideoCardState();
+}
+
+class _VideoCardState extends State<VideoCard> with SingleTickerProviderStateMixin {
+  late AnimationController _likeController;
+
+  @override
+  void initState() {
+    super.initState();
+    _likeController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+  }
+
+  @override
+  void dispose() {
+    _likeController.dispose();
+    super.dispose();
+  }
+
+  void _toggleLike() {
+    setState(() {
+      widget.video.isLiked = !widget.video.isLiked;
+      widget.onLikeToggle(widget.video.isLiked);
+    });
+    _likeController.forward().then((_) => _likeController.reverse());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: NetworkImage(widget.video.videoThumbnail),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [kBg.withOpacity(0.8), Colors.transparent],
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundImage: NetworkImage(widget.video.avatar),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.video.username,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.video.description,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.white70,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: () {
+                        widget.onFollowToggle(!widget.video.isFollowed);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: widget.video.isFollowed ? Colors.transparent : kAccent,
+                          border: widget.video.isFollowed
+                              ? Border.all(color: Colors.white)
+                              : null,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
+                        child: Text(
+                          widget.video.isFollowed ? 'متابع' : 'متابعة',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: widget.video.isFollowed ? Colors.white : Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        Positioned(
+          right: 12,
+          bottom: 100,
+          child: Column(
+            children: [
+              ScaleTransition(
+                scale: Tween<double>(begin: 1, end: 1.3).animate(
+                  CurvedAnimation(parent: _likeController, curve: Curves.easeInOut),
+                ),
+                child: GestureDetector(
+                  onTap: _toggleLike,
+                  child: Column(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black.withOpacity(0.3),
+                        ),
+                        padding: const EdgeInsets.all(12),
+                        child: Icon(
+                          widget.video.isLiked
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: widget.video.isLiked ? kAccent : Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _formatNumber(widget.video.currentLikes),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              GestureDetector(
+                onTap: widget.onCommentTap,
+                child: Column(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withOpacity(0.3),
+                      ),
+                      padding: const EdgeInsets.all(12),
+                      child: const Icon(
+                        Icons.message_outlined,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _formatNumber(widget.video.comments),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              GestureDetector(
+                onTap: widget.onShareTap,
+                child: Column(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withOpacity(0.3),
+                      ),
+                      padding: const EdgeInsets.all(12),
+                      child: const Icon(
+                        Icons.share_outlined,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _formatNumber(widget.video.shares),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.black.withOpacity(0.3),
+                ),
+                padding: const EdgeInsets.all(12),
+                child: const Icon(
+                  Icons.music_note,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatNumber(int number) {
+    if (number >= 1000000) {
+      return '${(number / 1000000).toStringAsFixed(1)}M';
+    } else if (number >= 1000) {
+      return '${(number / 1000).toStringAsFixed(1)}K';
+    }
+    return number.toString();
+  }
+}
+
+class CommentSheet extends StatefulWidget {
+  final Video video;
+
+  const CommentSheet({required this.video});
+
+  @override
+  State<CommentSheet> createState() => _CommentSheetState();
+}
+
+class _CommentSheetState extends State<CommentSheet> {
+  final TextEditingController _commentController = TextEditingController();
+  final List<Comment> comments = [
+    Comment(
+      username: 'محمود علي',
+      avatar: 'https://i.pravatar.cc/150?img=10',
+      text: 'فيديو جميل جداً 👏',
+      likes: 234,
+      timestamp: '2 دقيقة',
+    ),
+    Comment(
+      username: 'سارة أحمد',
+      avatar: 'https://i.pravatar.cc/150?img=11',
+      text: 'معجبة كتير بمحتواك',
+      likes: 156,
+      timestamp: '1 ساعة',
+    ),
+  ];
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'التعليقات',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: const Icon(Icons.close),
+              ),
+            ],
+          ),
+        ),
+        const Divider(color: Colors.white12),
+        Expanded(
+          child: ListView.builder(
+            itemCount: comments.length,
+            itemBuilder: (context, index) {
+              final comment = comments[index];
+              return Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundImage: NetworkImage(comment.avatar),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                comment.username,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                comment.timestamp,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.white54,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            comment.text,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.white70,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.favorite_border,
+                                size: 14,
+                                color: Colors.white54,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                comment.likes.toString(),
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.white54,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              const Text(
+                                'رد',
+                                style: TextStyle(
+                                  fontSize: 10,
+  
